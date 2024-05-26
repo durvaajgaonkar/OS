@@ -1,0 +1,476 @@
+//dp
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define NUM_PHILOSOPHERS 5
+
+enum { THINKING, HUNGRY, EATING } state[NUM_PHILOSOPHERS];
+sem_t mutex;
+sem_t forks[NUM_PHILOSOPHERS];
+
+int LEFT(int i) { return i; }
+int RIGHT(int i) { return (i + 1) % NUM_PHILOSOPHERS; }
+
+void test(int i) {
+    if (state[i] == HUNGRY && state[LEFT(i)] != EATING && state[RIGHT(i)] != EATING) {
+        state[i] = EATING;
+        sem_post(&forks[i]);
+    }
+}
+
+void pickup_forks(int i) {
+    sem_wait(&mutex);
+    state[i] = HUNGRY;
+    test(i);
+    sem_post(&mutex);
+    sem_wait(&forks[i]);
+}
+
+void return_forks(int i) {
+    sem_wait(&mutex);
+    state[i] = THINKING;
+    test(LEFT(i));
+    test(RIGHT(i));
+    sem_post(&mutex);
+}
+
+void* philosopher(void* arg) {
+    int phil_id = *(int*)arg;
+    while (1) {
+        printf("Philosopher %d is thinking\n", phil_id);
+        sleep(1);
+        pickup_forks(phil_id);
+        printf("Philosopher %d is eating\n", phil_id);
+        sleep(1);
+        return_forks(phil_id);
+    }
+}
+
+int main() {
+    pthread_t philosophers[NUM_PHILOSOPHERS];
+    sem_init(&mutex, 0, 1);
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+        sem_init(&forks[i], 0, 0);
+    }
+
+    int ids[NUM_PHILOSOPHERS];
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+        ids[i] = i;
+        pthread_create(&philosophers[i], NULL, philosopher, &ids[i]);
+    }
+
+    // Allow the threads to run for a fixed time
+    for (int i = 0; i < 10; i++) {
+        sleep(1);
+    }
+
+    // Cancel all the threads
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+        pthread_cancel(philosophers[i]);
+    }
+
+    // Clean up semaphores
+    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
+        sem_destroy(&forks[i]);
+    }
+    sem_destroy(&mutex);
+
+    return 0;
+}
+
+//reader
+#include<stdio.h>
+#include<pthread.h>
+#include<semaphore.h>
+
+#define READER_SIZE=5
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define MAX_READERS 5
+
+sem_t mutex, writeMutex;
+int readCount = 0;
+
+void *reader(void *arg) {
+    while (1) {
+        sem_wait(&mutex);
+        readCount++;
+        if (readCount == 1) {
+            sem_wait(&writeMutex);
+        }
+        sem_post(&mutex);
+        printf("Reader %d is reading\n", *(int*)arg);
+        sleep(1);
+
+        sem_wait(&mutex);
+        readCount--;
+        if (readCount == 0) {
+            sem_post(&writeMutex);
+        }
+        sem_post(&mutex);
+        sleep(2);
+    }
+    pthread_exit(NULL);
+}
+
+void *writer(void *arg) {
+    while (1) {
+        sem_wait(&writeMutex);
+        printf("Writer %d is writing\n", *(int*)arg);
+        sleep(1);
+        sem_post(&writeMutex);
+        sleep(3);
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t readers[5], writers;
+    int readerIds[5], writerId;
+
+    sem_init(&mutex, 0, 1);
+    sem_init(&writeMutex, 0, 1);
+
+    for (int i = 0; i < MAX_READERS; i++) {
+        readerIds[i] = i + 1;
+        pthread_create(&readers[i], NULL, reader, &readerIds[i]);
+    }
+    writerId = 1;
+    pthread_create(&writers, NULL, writer, &writerId);
+
+    for (int i = 0; i < MAX_READERS; i++) {
+        pthread_join(readers[i], NULL);
+    }
+    pthread_join(writers, NULL);
+
+    sem_destroy(&mutex);
+    sem_destroy(&writeMutex);
+
+    return 0;
+}
+
+//pc
+    #include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define BUFFER_SIZE 5
+#define NUM_ITEMS 10
+
+int buffer[BUFFER_SIZE];
+sem_t s, empty, full;
+int in = 0, out = 0;
+
+void *producer(void *arg) {
+    int item;
+    for (int i = 0; i < NUM_ITEMS; i++) {
+        item = rand()%100;
+        sem_wait(&empty);
+        sem_wait(&s);
+        buffer[in] = item;
+        printf("Produced: %d\n", item);
+        in = (in + 1) % BUFFER_SIZE;
+        sem_post(&s);
+        sem_post(&full);
+    }
+    pthread_exit(NULL);
+}
+
+void *consumer(void *arg) {
+    int item;
+    for (int i = 0; i < NUM_ITEMS; i++) {
+        sem_wait(&full);
+        sem_wait(&s);
+        item = buffer[out];
+        printf("Consumed: %d\n", item);
+        out = (out + 1) % BUFFER_SIZE;
+        sem_post(&s);
+        sem_post(&empty);
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t producer_thread, consumer_thread;
+    sem_init(&s, 0, 1);
+    sem_init(&empty, 0, BUFFER_SIZE);
+    sem_init(&full, 0, 0);
+
+    pthread_create(&producer_thread, NULL, producer, NULL);
+    pthread_create(&consumer_thread, NULL, consumer, NULL);
+
+    pthread_join(producer_thread, NULL);
+    pthread_join(consumer_thread, NULL);
+
+    sem_destroy(&s);
+    sem_destroy(&empty);
+    sem_destroy(&full);
+
+    return 0;}
+//one semaphore for critical section and the other two for genrating full_slots of empty slots
+//multiple writers are allowed
+
+//mutex
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#define N 5
+
+enum { THINKING, HUNGRY, EATING } state[N];
+pthread_mutex_t mutex;
+pthread_cond_t condition[N];
+
+void init() {
+    pthread_mutex_init(&mutex, NULL);
+    for (int i = 0; i < N; ++i) {
+        pthread_cond_init(&condition[i], NULL);
+    }
+}
+
+void lock(pthread_mutex_t *mutex) {
+    pthread_mutex_lock(mutex);
+}
+
+void unlock(pthread_mutex_t *mutex) {
+    pthread_mutex_unlock(mutex);
+}
+
+void think(int philosopher_num) {
+    printf("Philosopher %d is thinking\n", philosopher_num);
+}
+
+void eat(int philosopher_num) {
+    printf("Philosopher %d is eating\n", philosopher_num);
+    sleep(1); // Simulating eating time
+}
+
+void* philosopher(void* arg) {
+    int philosopher_num = (int)arg;
+    int left = philosopher_num;
+    int right = (philosopher_num + 1) % N;
+
+    while (1) {
+        think(philosopher_num);
+        lock(&mutex);
+        state[philosopher_num] = HUNGRY;
+        test(philosopher_num);
+        while (state[philosopher_num] != EATING) {
+            pthread_cond_wait(&condition[philosopher_num], &mutex); // Waiting for signal to eat
+        }
+        unlock(&mutex);
+        eat(philosopher_num);
+        lock(&mutex);
+        state[philosopher_num] = THINKING;
+        test(left);
+        test(right);
+        unlock(&mutex);
+    }
+}
+
+void take_forks(int philosopher_num) {
+    lock(&mutex);
+    state[philosopher_num] = HUNGRY;
+    test(philosopher_num);
+    unlock(&mutex);
+}
+
+void put_forks(int philosopher_num) {
+    lock(&mutex);
+    state[philosopher_num] = THINKING;
+    test((philosopher_num + N - 1) % N);
+    test((philosopher_num + 1) % N);
+    unlock(&mutex);
+}
+
+void test(int philosopher_num) {
+    int left = (philosopher_num + N - 1) % N;
+    int right = (philosopher_num + 1) % N;
+
+    if (state[philosopher_num] == HUNGRY && state[left] != EATING && state[right] != EATING) {
+        state[philosopher_num] = EATING;
+        pthread_cond_signal(&condition[philosopher_num]); // Signal that philosopher can eat
+    }
+}
+
+int main() {
+    pthread_t philosophers[N];
+    int i;
+    init();
+
+    int ids[N];
+    for (i = 0; i < N; ++i) {
+        ids[i] = i;
+        pthread_create(&philosophers[i], NULL, philosopher, &ids[i]);
+    }
+
+    for (i = 0; i < N; ++i) {
+        pthread_join(philosophers[i], NULL);
+    }
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#define N 10
+#define TRUE 1
+
+int mutex = 1;
+int full = 0;
+int empty = N;
+
+void lock(int *mutex) {
+    while (*mutex <= 0);
+    (*mutex)--;
+}
+
+void unlock(int *mutex) {
+    (*mutex)++;
+}
+
+int produce_item() {
+    return rand() % 100;
+}
+
+void insert_item(int item) {
+    printf("Produced item: %d\n", item);
+}
+
+void consume_item(int item) {
+    printf("Consumed item: %d\n", item);
+}
+
+void* producer(void* arg) {
+    while (TRUE) {
+        int item = produce_item();
+        lock(&mutex);
+        if (empty > 0) {
+            insert_item(item);
+            empty--;
+            full++;
+        }
+        unlock(&mutex);
+    }
+}
+
+void* consumer(void* arg) {
+    while (TRUE) {
+        lock(&mutex);
+        if (full > 0) {
+            // Consume the item
+            full--;
+            empty++;
+        }
+        unlock(&mutex);
+        // Perform the consumption task outside the mutex
+        consume_item(rand() % 100); // Assuming consume_item() is defined elsewhere
+    }
+}
+
+int main() {
+    pthread_t prod_thread, cons_thread;
+
+    pthread_create(&prod_thread, NULL, producer, NULL);
+    pthread_create(&cons_thread, NULL, consumer, NULL);
+
+    pthread_join(prod_thread, NULL);
+    pthread_join(cons_thread, NULL);
+
+    return 0;
+}
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define NUM_READERS 3
+#define NUM_WRITERS 2
+
+int readerCount = 0;
+int writerCount = 0;
+int mutex = 1;
+int wrt = 1;
+
+void lock(int *mutex) {
+    while (*mutex <= 0);
+    (*mutex)--;
+}
+
+void unlock(int *mutex) {
+    (*mutex)++;
+}
+
+void read_data(int readerNum) {
+    printf("Reader %d is reading data\n", readerNum);
+}
+
+void write_data(int writerNum) {
+    printf("Writer %d is writing data\n", writerNum);
+}
+
+void* reader(void* arg) {
+    int readerNum = (int)arg;
+    while (1) {
+        lock(&mutex);
+        readerCount++;
+        if (readerCount == 1)
+            lock(&wrt);
+        unlock(&mutex);
+        read_data(readerNum);
+        lock(&mutex);
+        readerCount--;
+        if (readerCount == 0)
+            unlock(&wrt);
+        unlock(&mutex);
+        sleep(1); // Simulate reading time
+    }
+}
+
+void* writer(void* arg) {
+    int writerNum = (int)arg;
+    while (1) {
+        lock(&wrt);
+        write_data(writerNum);
+        unlock(&wrt);
+        sleep(1); // Simulate writing time
+    }
+}
+
+int main() {
+    pthread_t reader_threads[NUM_READERS], writer_threads[NUM_WRITERS];
+    int i;
+    int readerIds[NUM_READERS];
+    int writerIds[NUM_WRITERS];
+
+    for (i = 0; i < NUM_READERS; ++i) {
+        readerIds[i] = i + 1;
+        pthread_create(&reader_threads[i], NULL, reader, &readerIds[i]);
+    }
+
+    for (i = 0; i < NUM_WRITERS; ++i) {
+        writerIds[i] = i + 1;
+        pthread_create(&writer_threads[i], NULL, writer, &writerIds[i]);
+    }
+
+    for (i = 0; i < NUM_READERS; ++i) {
+        pthread_join(reader_threads[i], NULL);
+    }
+
+    for (i = 0; i < NUM_WRITERS; ++i) {
+        pthread_join(writer_threads[i], NULL);
+    }
+
+    return 0;
+}
+
+

@@ -1,0 +1,127 @@
+//shell
+1. ARITHEMATIC
+#!/bin/bash
+echo "Enter the decimal number:"
+read n
+# Check if input is a valid decimal number
+if ! [[ $n =~ ^[0-9]+$ ]]; then
+    echo "Error: Invalid input. Please enter a valid decimal number."
+    exit 1
+fi
+binary=""
+while [ $n -gt 0 ]; do
+    remainder=$(( $n % 2 ))
+    binary="$remainder$binary"
+    n=$(( $n / 2 ))
+done
+echo "Binary equivalent: $binary"
+
+
+2. A) CONDITIONALS (Case wise output if the input is capital, small, number, or other)
+#!/bin/bash
+echo "enter a key" 
+read key
+case $key in
+[A-Z]) echo "capital letter" 
+;;
+[a-z]) echo "small letter"
+;;
+[0-9]) echo "number"
+;;
+*) echo "other characters"
+;;
+esac
+
+2. B) LOOPS (Loop to iterate for numbers till input reached)
+#!/bin/bash
+echo "Enter the number to stop iterating:"
+read stop_iteration
+a=1
+while [ $a -lt $stop_iteration ]
+do
+    echo "iteration no $a"
+    ((a++))
+done
+
+3.	COMMAND LINE ARGUMENTS (takes a directory path as a command-line argument and lists all the files in that directory)
+#!/bin/bash
+# Check if an argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <directory_path>"
+    exit 1
+fi
+# Check if the provided argument is a directory
+if ! [ -d "$1" ]; then
+    echo "Error: Argument must be a directory."
+    exit 1
+fi
+# Iterate over files in the directory and list them
+echo "Files in directory $1:"
+for file in "$1"/*; do
+    if [ -f "$file" ]; then
+        echo "$(basename "$file")"
+    fi
+done
+ 
+4.	STRING OPERATIONS (Compare 2 strings)
+#!/bin/bash
+string1="AnushkaVarpe"
+string2="AnushkaVarpe"
+if test "$string1" = "$string2"
+then
+   echo "Strings are equal"
+else
+   echo "Strings are not equal"
+fi
+
+5.	EXECUTION OF LINUX COMMANDS IN A SHELL (Find and display the largest file in the directory)
+#!/bin/bash
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <directory_path>"
+    exit 1
+fi
+if ! [ -d "$1" ]; then
+    echo "Error: Argument must be a directory."
+    exit 1
+fi
+echo "Largest file in directory $1:"
+find "$1" -type f -printf '%s %p\n' | sort -nr | head -n 1
+ 
+6.	FUNCTIONS (Check leap years function)
+#!/bin/bash
+function leap {
+    read -p "Enter the year: " year
+    echo "Taking year as $year"
+    if [ $((year % 400)) -eq 0 ]; then
+        echo "Leap year"
+    elif [ $((year % 100)) -eq 0 ]; then
+        echo "Not a leap year"
+    elif [ $((year % 4)) -eq 0 ]; then
+        echo "Leap year"
+    else
+        echo "Not a leap year"
+    fi
+}
+leap
+
+7.	ARRAYS (Scan And Add 2 Arrays)
+#!/bin/bash
+clear
+echo "Enter the size of array:"
+read s
+echo "Enter the elements of array A..."
+for ((i=0; i<$s; i++))
+do
+    read a[$i]
+done
+echo "Enter the elements of Array B:"
+for ((i=0; i<$s; i++))
+do
+    read b[$i]
+done
+echo "The sum of arrays is:"
+for ((i=0; i<$s; i++))
+do
+    c[$i]=$(( ${a[$i]} + ${b[$i]} ))
+    echo "${c[$i]}"
+done
