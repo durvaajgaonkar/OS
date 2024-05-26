@@ -1,0 +1,358 @@
+LINUX COMMANDS
+
+Q1.   Change your password to a password you would like to use for the remainder of the semester.
+
+student@admins-iMac-2 ~ % passwd
+Changing password for student.
+Old Password:
+New Password:
+Retype New Password:
+passwd : password updated successfully
+
+Q2. Display the system’s date.
+student@admins-iMac-2 ~ % date 
+Thu Jan 11 12:22:35 IST 2024
+
+Q3. Count the number of lines in the /etc/passwd file.
+student@admins-iMac-2 ~ % wc /etc/passwd
+    120     322    7630 /etc/passwd
+
+Q4. Find out who else is on the system.
+student@admins-iMac-2 ~ % who
+student  console  Jan 11 10:04 
+student  ttys000  Jan 11 12:15 
+
+Q5 . Direct the output of the man pages for the date command to a file named mydate.
+student@admins-iMac-2 ~ % man date > mydate1	
+student@admins-iMac-2 ~ % cat mydate1
+
+6. Create a subdirectory called mydir.
+student@admins-iMac-2 ~ % mkdir mydir10
+
+7. Move the file mydate into the new subdirectory.
+student@admins-iMac-2 ~ % mv mydate mydir10/ 
+
+8.) Go to the subdirectory mydir and copy the file mydate to a new file called ourdate
+student@admins-iMac-2 ~ % mv mydate1 mydir10/ 
+student@admins-iMac-2 ~ % mydir10
+student@admins-iMac-2 ~ % cd mydir10
+student@admins-iMac-2 mydir10 % cp mydate1 ourdate
+
+9. List the contents of mydir.
+student@admins-iMac-2 mydir10 % ls
+mydate1	ourdate
+
+10. Do a long listing on the file ourdate and note the permissions.
+student@admins-iMac-2 mydir10 % ls -l
+student@admins-iMac-2 mydir10 % ourdate
+student@admins-iMac-2 mydir10 % ls -l ourdate
+-rw-r--r--  1 student  staff  12418 Jan 11 12:40 ourdate
+
+11. Display the name of the current directory starting from the root.
+student@admins-iMac-2 mydir10 % pwd
+/Users/student/mydir10
+
+12. Move the files in the directory mydir back to your home directory.
+student@admins-iMac-2 mydir10 % cp * /home     
+
+13. Display the first 5 lines of mydate. 
+student@admins-iMac-2 mydir10 % head -5 mydate1
+DATE(1)                   BSD General Commands Manual                  DATE(1)
+
+NAME
+    date -- display or set date and time
+
+14. Display the last 8 lines of mydate.
+student@admins-iMac-2 mydir10 % tail -8 mydate1
+    The date utility is expected to be compatible with IEEE Std 1003.2
+    (``POSIX.2'').  The -d, -f, -j, -n, -r, -t, and -v options are all exten-
+    sions to the standard.
+
+HISTORY
+    A date command appeared in Version 1 AT&T UNIX.
+
+BSD                               May 7, 2015                              BSD
+
+15. Remove the directory mydir.
+
+student@admins-iMac-2 mydir10 % rm -rf mydir10 
+student@admins-iMac-2 mydir10 % rm -rf *      
+zsh: sure you want to delete all 2 files in /Users/student/mydir10 [yn]? y
+
+16. Redirect the output of the long listing of files to a file named list.
+student@admins-iMac-2 ~ % ls -l >list
+student@admins-iMac-2 ~ % list
+student@admins-iMac-2 ~ % cat list
+total 1104
+
+17.) Select any 5 capitals of states in India and enter them in a file named capitals1. Choose 5
+more capitals and enter them in a file named capitals2. Choose 5 more capitals and enter them in
+a file named capitals3. Concatenate all 3 files and redirect the output to a file named capitals.
+
+student@admins-iMac-3 ~ % cat > capitals1
+Mumbai
+Bengaluru
+Pune 
+Tokyo
+Shibuya
+student@admins-iMac-3 ~ % cat > capitals2
+Hyderabad
+Berlin
+Nairobi
+Amsterdam
+Chennai
+student@admins-iMac-3 ~ % cat > capitals3
+Panjim
+Mapusa
+Phonda
+Amba
+Trivandrum
+student@admins-iMac-3 ~ % cat capitals1 capitals2 capitals3 > capitals
+student@admins-iMac-3 ~ % cat capitals
+Mumbai
+Bengaluru
+Pune 
+Tokyo
+Shibuya
+Hyderabad
+Berlin
+Nairobi
+Amsterdam
+Chennai
+Panjim
+Mapusa
+Phonda
+Amba
+Trivandrum
+student@admins-iMac-3 ~ % 
+
+18.) Concatenate the file capitals2 at the end of file capitals.
+student@admins-iMac-3 ~ % cat capitals2 >> capitals
+student@admins-iMac-3 ~ % cat capitals
+Mumbai
+Bengaluru
+Pune 
+Tokyo
+Shibuya
+Hyderabad
+Berlin
+Nairobi
+Amsterdam
+Chennai
+Panjim
+Mapusa
+Phonda
+Amba
+Trivandrum
+Hyderabad
+Berlin
+Nairobi
+Amsterdam
+Chennai
+
+19. Give read and write permissions to all users for the file capitals.
+student@admins-iMac-3 ~ % chmod 777 capitals
+student@admins-iMac-3 ~ % ls -l capitals
+-rwxrwxrwx  1 student  staff  160 Jan 25 13:44 capitals
+
+20.) Give read permissions only to the owner of the file capitals. Open the file, make some
+changes and try to save it. What happens ?
+student@admins-iMac-3 ~ % ls -l capitals
+-r--rwxrwx  1 student  staff  160 Jan 25 13:44 capitals
+student@admins-iMac-3 ~ % cat > capitals
+zsh: permission denied: capitals
+
+21.) Create an alias to concatenate the 3 files capitals1, capitals2, capitals3 and redirect the output
+to a file named capitals. Activate the alias and make it run.
+student@admins-iMac-3 ~ % alias f1="cat capitals1 capitals2 capitals3 >> capitals"
+student@admins-iMac-3 ~ % f1
+zsh: permission denied: capitals
+student@admins-iMac-3 ~ % cat capitals
+Mumbai
+Bengaluru
+Pune 
+Tokyo
+Shibuya
+Hyderabad
+Berlin
+Nairobi
+Amsterdam
+Chennai
+Panjim
+Mapusa
+Phonda
+Amba
+Trivandrum
+Hyderabad
+Berlin
+Nairobi
+Amsterdam
+Chennai
+
+
+
+
+22.) Find out the number of times the string “the” appears in the file mydate.
+
+student@admins-iMac-3 mydir % grep -o -i the mydate | wc -l
+    175
+
+23.) Find out the line numbers on which the string “date” exists in mydate.
+
+student@admins-iMac-3 mydir % grep -n date mydate        
+5:     date -- display or set date and time
+16:     date and time.  Otherwise, depending on the options specified, date will
+17:     set the date and time or print it in a user-defined way.
+19:     The date utility displays the date and time read from the kernel clock.
+20:     When used to set the date and time, both the kernel clock and the hard-
+21:     ware clock are updated.
+23:     Only the superuser may set the date, and if the system securelevel (see
+37:     -j      Do not try to set the date.  This allows you to use the -f flag
+
+24.) Print all lines of mydate except those that have the letter “i” in them.
+
+student@admins-iMac-3 mydir % grep -v "i"  mydate
+
+25.) List the words of 4 letters from the file mydate.
+
+student@admins-iMac-3 mydir % grep -Eo '\b\w{4}\b' mydate        
+UNIX
+2015
+student@admins-iMac-3 mydir % 
+
+
+26)  List 5 states in north east India in a file mystates. List their corresponding capitals in a file
+mycapitals. Use the paste command to join the 2 files.
+
+student@admins-iMac-3 ~ % cat >mystates
+Assam
+Nagaland
+Sikkim
+Meghalaya
+Mizoram
+student@admins-iMac-3 ~ % cat >mycapitals
+Dispur
+Kohima
+Gangtok
+Shillong
+Aizhwal
+student@admins-iMac-3 ~ % 
+student@admins-iMac-3 ~ % paste mystates mycapitals
+Assam	Dispur
+Nagaland	Kohima
+Sikkim	Gangtok
+Meghalaya	Shillong
+Mizoram	Aizhwal
+
+27.)  Use the cut command to print the 1 st and 3 rd columns of the /etc/passwd file for all students
+in this class.
+
+student@admins-iMac-3 ~ %  cut -d: -f1,3 /etc/passwd
+##
+# User Database
+# 
+# Note that this file is consulted directly only when the system is running
+# in single-user mode.  At other times this information is provided by
+# Open Directory.
+#
+# See the opendirectoryd(8) man page for additional information about
+# Open Directory.
+##
+nobody:-2
+root:0
+daemon:1
+_uucp:4
+_taskgated:13
+_networkd:24
+_installassistant:25
+_lp:26
+_postfix:27
+_scsd:31
+_ces:32
+_appstore:33
+_mcxalr:54
+_appleevents:55
+_geod:56
+_devdocs:59
+_sandbox:60
+_mdnsresponder:65
+_ard:67
+_www:70
+_eppc:71
+_cvs:72
+_svn:73
+_mysql:74
+_sshd:75
+_qtss:76
+_cyrus:77
+_mailman:78
+_appserver:79
+_clamav:82
+_amavisd:83
+_jabber:84
+_appowner:87
+_windowserver:88
+_spotlight:89
+_tokend:91
+_securityagent:92
+_calendar:93
+_teamsserver:94
+_update_sharing:95
+_installer:96
+_atsserver:97
+_trustd:282
+_oahd:441
+student@admins-iMac-3 ~ % 
+
+
+28.)  Count the number of people logged in and also trap the users in a file using the tee command.
+
+student@admins-iMac-3 ~ % who | tee logged_users.txt |wc -l
+      2
+student@admins-iMac-3 ~ % ls
+%cd			capitals3		nano.save.2
+1			capitals3.txt		ne.txt
+10			captials.text		new.doc
+234.txt			case			new.sh
+3			case.sh			new.txt
+34			cat			new1.txt
+		vit.txt
+capitals1		mystates.txt		vitnew.txt
+capitals1.txt		n.f1			yes
+capitals123.txt		naaz			yes-ok
+capitals2		naaz.txt		you.doic
+capitals2.text		nano.save
+capitals2.txt		nano.save.1
+student@admins-iMac-3 ~ % 
+
+29.)  Convert the contents of mystates into uppercase.
+
+student@admins-iMac-3 ~ % tr a-z A-Z <mystates
+ASSAM
+NAGALAND
+SIKKIM
+MEGHALAYA
+MIZORAM
+
+30.)  Create any two files & display the common values between them.
+
+student@admins-iMac-3 ~ % cat >cfile1
+hello  
+my
+name 
+is                              
+durva
+student@admins-iMac-3 ~ % cat >cfile2         
+hello
+i
+am
+student@admins-iMac-3 ~ % sort cfile1 >scfile1
+student@admins-iMac-3 ~ % sort cfile2 >scfile2
+student@admins-iMac-3 ~ % comm scfile1 scfile2
+	am
+durva
+		hello
+	i
+is 
+my
+name 
